@@ -1,0 +1,47 @@
+name: Deploy (ocsecurity.yaml)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ocsecurity.yaml'
+      - '.github/workflows/deploy-ocsecurity.yml'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Descargar el código del repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Instalar la CLI de OpenShift (oc)
+      - name: Install OC CLI
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "latest"
+
+      # 3️⃣ Iniciar sesión en el clúster de OpenShift
+      - name: Login to OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: https://api.rm1.0a51.p1.openshiftapps.com:6443
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
+          # Descomenta la siguiente línea si tu clúster usa TLS propio
+          # insecure_skip_tls_verify: true
+
+      # 4️⃣ Seleccionar el proyecto
+      - name: Select project
+        run: oc project lpintofsgrp-dev
+
+      # 5️⃣ Aplicar el archivo ocsecurity.yaml
+      - name: Apply ocsecurity.yaml
+        run: |
+          echo "🔍 Validando YAML con dry-run..."
+          oc apply --dry-run=server -f ocsecurity.yaml
+
+          echo "🚀 Aplicando configuración..."
+          oc
