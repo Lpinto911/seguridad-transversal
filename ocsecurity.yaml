@@ -1,7 +1,9 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  # El nombre que usarás para referenciar esta ServiceAccount
   name: cicd-serviceaccount
+  # Opcional: El namespace donde se creará. Si se omite, se usará 'default'.
   namespace: lpintofsgrp-dev
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -10,10 +12,24 @@ metadata:
   name: cicd-binding
   namespace: lpintofsgrp-dev
 subjects:
-  - kind: ServiceAccount
-    name: cicd-serviceaccount
-    namespace: lpintofsgrp-dev
+- kind: ServiceAccount
+  name: cicd-serviceaccount # La cuenta de servicio que creamos
+  namespace: lpintofsgrp-dev
 roleRef:
-  apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: edit
+  name: edit # El rol que creamos
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cicd-binding-rbac
+  namespace: lpintofsgrp-dev
+subjects:
+- kind: ServiceAccount
+  name: cicd-serviceaccount # La cuenta de servicio que creamos
+  namespace: lpintofsgrp-dev
+roleRef:
+  kind: Role
+  name: rbac-edit # El rol que creamos
+  apiGroup: rbac.authorization.k8s.io
